@@ -5,4 +5,4 @@ deploy:
     - master
   script:
     - DIAGRAM_FILE=diagram-istio.py
-    - python diagram-istio.py    
+    - python $DIAGRAM_FILE    
