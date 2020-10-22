@@ -1,0 +1,7 @@
+deploy:
+  stage: deploy
+  image: samuelsantos/generate-diagrams-as-code:latest
+  tags: 
+    - master
+  script:
+    - diagram.py --name test_xyz samuelsantos/generate-diagrams-as-code    
