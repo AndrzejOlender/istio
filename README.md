@@ -25,7 +25,7 @@ Wszystko to w oparciu o Istio, czyli należało wykorzystując wbudowane obiekty
 ### 1. Udostępnianie aplikacji pracujących w klastrze k8s użytkownikom
 Udostępnianie aplikacji dla użytkownika końcowego w przypadku Istio, najlepiej przeprowadzić za pomocą istio-ingressgateway. Jest możliwość aby „ingressy“ kubernetesowe były przetłumaczone tak, aby Istio je rozumiało gdzie będzie miało kierowało ruch. Pozbywamy się jednak większości funkcjonalności Istio. Brak mTLS, obiektów `VirtualService`,  `DestinationRule`, `AuthorizationPolicy`, `PeerAuthentication`. 
 
-Istio bowiem może pracować w dwóch trybach, restrykcyjnym oraz pobłażliwym. Jeszcze przed wersją 1.6.x, czyli stosunkowo niedawno, nie było w ogóle możliwości ruchu sieciowego wewnątrz klastra bez odpowiednuch sidecar z envoy w podach. Obecnie w nowych wersjach jest to możliwe.
+Istio bowiem może pracować w dwóch trybach, restrykcyjnym oraz pobłażliwym. Jeszcze przed wersją 1.6.x, czyli stosunkowo niedawno, nie było w ogóle możliwości ruchu sieciowego wewnątrz klastra bez odpowiednich sidecar z envoy. Obecnie w nowych wersjach jest to możliwe.
 
 Poniżej przykład konfiguracji obiektów `Gateway` oraz  `VirtualService`, dzięki tym obiektom udostępniłem testową aplikację „Product Page“ na świat pod adres url [https://istio.olender.io/productpage](https://istio.olender.io/productpage).
 	
