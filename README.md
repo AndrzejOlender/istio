@@ -6,8 +6,24 @@
 # Linux Polska - wykorzystanie Istio w klastrze K8s
 ## Makieta rozwiązania, demonstrująca, jak można wykorzystać Istio do poniższych założeń.
 
-### 1. Udostępnianie aplikacji pracujących w klastrze k8s, użytkownikom.
-Udostępnianie aplikacji dla użytkownika końcowego w przypadku Istio, najlepiej przeprowadzić za pomocą istio-ingressgateway. Jest możliwość aby „ingressy“ kubernetesowe były przetłumaczone tak, aby Istio je rozumiało gdzie będzie miało kierowało ruch. Pozbywamy się jednak większości funkcjonalności Istio. Brak mTLS, obiektów `VirtualService`,  `DestinationRule`, `AuthorizationPolicy`, `PeerAuthentication`. Istio bowiem może pracować w dwóch trybach, restrykcyjnym oraz pobłażliwym. Poniżej przykład konfiguracji obiektów `Gateway` oraz  `VirtualService`, dzięki tym obiektom udostępniłem usługę na świat pod adres url [https://istio.olender.io/productpage](https://istio.olender.io/productpage).
+
+### Wprowadzenie 
+Service Mesh Istio opiera się na dodatkowej warstwie abstrakcji w klastrze kubernetesowym, który sam w sobie jest już abstrakcją. Powoduje to, że samo Istio nie jest łatwe we wdrożeniu oraz późniejszym utrzymaniu. Sam projekt rozwija się bardzo dynamicznie i przy tym bardzo się zmienia (sporo tzw. „breaking changes“ tylko w ostatnim roku). Istio staje się jednak coraz bardziej popularne i szeroko wykorzystywane, zwłaszcza w dużych środowiskach, z dużą ilością mikroserwisów, gdzie daje dużą wartość. Wymienię 3 podstawowe.
+
+* Obustronne szyfrowanie mTLS
+* Monitoring
+* Zarządzanie ruchem
+
+Zadanie jakie miałem wykonać przedstawia dosyć prosty przepływ, przedstawię to w odpowiedniej kolejności:
+
+1. Zautomatyzowane wdrożenie aplikacji wraz z dostępami sieciowymi itp.
+2. Udostępnienie wcześniej wdrożonej aplikacji na świat zewnętrzny użytkownikom.
+3. Wprowadzenie do klastra k8s i zarazem Istio określonych z góry serwisów (baza danych, integracja API)
+
+Wszystko to w oparciu o Istio, czyli należało wykorzystując wbudowane obiekty Istio w Kubernetes. Poniżej udowadniam na przykładach, jak rozwiązałem powierzone mi zadania.
+
+### 1. Udostępnianie aplikacji pracujących w klastrze k8s użytkownikom
+Udostępnianie aplikacji dla użytkownika końcowego w przypadku Istio, najlepiej przeprowadzić za pomocą istio-ingressgateway. Jest możliwość aby „ingressy“ kubernetesowe były przetłumaczone tak, aby Istio je rozumiało gdzie będzie miało kierowało ruch. Pozbywamy się jednak większości funkcjonalności Istio. Brak mTLS, obiektów `VirtualService`,  `DestinationRule`, `AuthorizationPolicy`, `PeerAuthentication`. Istio bowiem może pracować w dwóch trybach, restrykcyjnym oraz pobłażliwym. Poniżej przykład konfiguracji obiektów `Gateway` oraz  `VirtualService`, dzięki tym obiektom udostępniłem testową aplikację „Product Page“ na świat pod adres url [https://istio.olender.io/productpage](https://istio.olender.io/productpage).
 	
 	apiVersion: networking.istio.io/v1alpha3
 	kind: Gateway
@@ -60,9 +76,9 @@ Udostępnianie aplikacji dla użytkownika końcowego w przypadku Istio, najlepie
 	        port:
 	          number: 9080
 
-### 2. Zautomatyzowana konfiguracja dostępu sieciowego wraz z procesem wdrażania aplikacji.
-Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dobrze jest opracować odpowiednie polityki wraz z obiektami Istio. Od wersji 1.6.x Istio, nie ma dedykowanego helm charta do jego instalacji. Istio instaluje się za pomocą cli `istioctl`. To przy okazji tworzy nam odpowiednie obiekty wewnątrz klastra K8s. Obecnie najlepsze rozwiązanie na instalację aplikacji w k8s jest jednak Helm. Jest on obecnie niejako standardem w świecie K8s. W chartach prócz standardowej polityki instalacji aplikacji, mogą być zawarte odniesienia do obiektów Istio. Tym sposobem definiując odpowiednie polityki, w tym sieciowe, w obiektach Istio.
-Poniżej przykład helm charta z wraz z politykami sieciowymi dla Istio `DestinationRule`. 
+### 2. Zautomatyzowana konfiguracja dostępu sieciowego wraz z procesem wdrażania aplikacji
+Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dobrze jest opracować odpowiednie polityki wraz z obiektami Istio. Od wersji 1.6.x Istio, nie ma dedykowanego helm charta do jego instalacji. Istio instaluje/modyfikuje się za pomocą cli `istioctl`. To przy okazji tworzy nam odpowiednie obiekty wewnątrz klastra K8s. Obecnie najlepsze rozwiązanie na instalację aplikacji w k8s jest jednak Helm. Jest on obecnie niejako standardem w świecie kubernetesa. W chartach prócz standardowej polityki instalacji aplikacji, mogą być zawarte odniesienia do obiektów Istio. Tym sposobem definiujemy odpowiednie polityki, w tym sieciowe, w obiektach Istio.
+Poniżej przykład helm charta z wraz z politykami sieciowymi dla Istio `DestinationRule`.
 
 	apiVersion: networking.istio.io/v1alpha3
 	kind: DestinationRule
@@ -80,7 +96,9 @@ Poniżej przykład helm charta z wraz z politykami sieciowymi dla Istio `Destina
 	        mode: SIMPLE
 	        host: {{ .Values.ingress.hosts }}
 
-Sam helm chart może już być aplikowany na różne sposoby wedle założeń projektowych. Poczynając dd ręcznego deploymentu poprzez cli i komendę ‘helm’ po bardziej złożone i zautomatyzowane procesy CI/CD.
+Sam helm chart może już być aplikowany na różne sposoby wedle założeń projektowych. Poczynając dd ręcznego deploymentu poprzez cli ‘helm’ po bardziej złożone i zautomatyzowane procesy CI/CD. Dodatkowo, można tak skonfigurować pewne polityki w Istio, aby określone czynności wykonywały się automatycznie. Przykładem może być, oznaczenie danego namespace (przykładowo default) aby automatycznie, wraz z aplikacją  uruchamiał się sidecar z envoy.
+
+	kubectl label namespace default istio-injection=enabled
 
 ### 3. Bezpieczny dostęp do aplikacji w K8s z poza klastra (baza danych, szyna integracyjna)
  Bezpieczne połączenie z poza klastra k8s jest zależne od trybu ustawienia Accessing External Services w Istio. Są możliwe dwa ustawienia. `REGISTRY_ONLY` gdzie cały ruch przychodzący jest zablokowany i trzeba wprowadzić odpowiednie polityki w obiekcie `ServiceEntry` coś na wzór „white listy“. Oraz drugi z trybów to `ALLOW_ANY`, gdzie cały ruch z zewnątrz jest dopuszczony. Poniżej przykładowa polityka która dopuszcza do service mesh bazę mongodb, ulokowaną na zewnątrz klastra.
@@ -142,4 +160,13 @@ Analogicznie, możemy również skonfigurować obiekt `ServiceEntry` dla zewnęt
 
 ![diagram-istio.png](diagram-istio.png)
 
-Przygotowując się do prezentacji zadania, proszę też pamiętać, że dobrze byłoby zrobić wprowadzenie dla jej uczestników, tj. opowiedzieć o samym zadaniu, założeniach, jakie mu towarzyszyły, tezie jaka, jest udowadniana. To wprowadzenie może być zrobione ustnie nie oczekujemy prezentacji wizualnej w tym zakresie.
+
+
+
+
+
+
+
+
+
+
