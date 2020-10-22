@@ -4,6 +4,5 @@ deploy:
   tags: 
     - master
   script:
-#    - DIAGRAM_FILE=diagram-istio.py
-#    - python $DIAGRAM_FILE    
-    - docker run --rm -t -v ~/:/data -e DIAGRAM_FILE=diagram-istio.py --name diagrams samuelsantos/generate-diagrams-as-code
+    - DIAGRAM_FILE=diagram-istio.py
+    - python $DIAGRAM_FILE    
