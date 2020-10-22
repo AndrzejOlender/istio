@@ -35,5 +35,3 @@ with Diagram("Diagram-Istio", show=False, outformat="png"):
     api >> vs
     api >> se
     api >> gt
-
-
