@@ -12,7 +12,12 @@ from diagrams.gcp.ml import InferenceAPI
 from diagrams.gcp.database import Datastore
 from diagrams.gcp.compute import Functions
 
-with Diagram("Diagram-Istio", show=False, outformat="png"):
+graph_attr = {
+    "fontsize": "25",
+    "bgcolor": "transparent"
+}
+
+with Diagram("Diagram-Istio", show=False, outformat="png", graph_attr=graph_attr):
     with Cluster("K8s"): 
         api = InferenceAPI("API k8s")
         
