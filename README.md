@@ -4,7 +4,7 @@
 
 
 # Linux Polska - wykorzystanie Istio w klastrze K8s
-## Makieta rozwiązania, demonstrująca, jak można wykorzystać Istio do poniższych założeń.
+## Makieta rozwiązania, demonstrująca, jak można wykorzystać Istio do określonych założeń projektowych
 
 
 ### Wprowadzenie 
@@ -14,7 +14,7 @@ Service Mesh Istio opiera się na dodatkowej warstwie abstrakcji w klastrze kube
 * Monitoring
 * Zarządzanie ruchem
 
-Zadanie jakie miałem wykonać przedstawia dosyć prosty przepływ, przedstawię to w odpowiedniej kolejności:
+Zadanie jakie miałem wykonać przedstawia dosyć prosty przepływ:
 
 1. Zautomatyzowane wdrożenie aplikacji wraz z dostępami sieciowymi itp.
 2. Udostępnienie wcześniej wdrożonej aplikacji na świat zewnętrzny użytkownikom.
@@ -77,8 +77,7 @@ Udostępnianie aplikacji dla użytkownika końcowego w przypadku Istio, najlepie
 	          number: 9080
 
 ### 2. Zautomatyzowana konfiguracja dostępu sieciowego wraz z procesem wdrażania aplikacji
-Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dobrze jest opracować odpowiednie polityki wraz z obiektami Istio. Od wersji 1.6.x Istio, nie ma dedykowanego helm charta do jego instalacji. Istio instaluje/modyfikuje się za pomocą cli `istioctl`. To przy okazji tworzy nam odpowiednie obiekty wewnątrz klastra K8s. Obecnie najlepsze rozwiązanie na instalację aplikacji w k8s jest jednak Helm. Jest on obecnie niejako standardem w świecie kubernetesa. W chartach prócz standardowej polityki instalacji aplikacji, mogą być zawarte odniesienia do obiektów Istio. Tym sposobem definiujemy odpowiednie polityki, w tym sieciowe, w obiektach Istio.
-Poniżej przykład helm charta z wraz z politykami sieciowymi dla Istio `DestinationRule`.
+Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dobrze jest opracować odpowiednie polityki wraz z obiektami Istio. Od wersji 1.6.x Istio, nie ma dedykowanego helm charta do jego instalacji. Istio instaluje/modyfikuje się za pomocą cli `istioctl`. To przy okazji tworzy nam odpowiednie obiekty wewnątrz klastra K8s. Obecnie najlepsze rozwiązanie na instalację aplikacji w k8s jest jednak Helm. Jest on obecnie niejako standardem w świecie kubernetesa. W chartach prócz standardowej polityki instalacji aplikacji, mogą być zawarte odniesienia do obiektów Istio. Tym sposobem definiujemy odpowiednie polityki, w tym sieciowe, w obiektach Istio. Poniżej przykład helm charta template wraz z politykami sieciowymi dla Istio `DestinationRule`.
 
 	apiVersion: networking.istio.io/v1alpha3
 	kind: DestinationRule
@@ -96,7 +95,7 @@ Poniżej przykład helm charta z wraz z politykami sieciowymi dla Istio `Destina
 	        mode: SIMPLE
 	        host: {{ .Values.ingress.hosts }}
 
-Sam helm chart może już być aplikowany na różne sposoby wedle założeń projektowych. Poczynając dd ręcznego deploymentu poprzez cli ‘helm’ po bardziej złożone i zautomatyzowane procesy CI/CD. Dodatkowo, można tak skonfigurować pewne polityki w Istio, aby określone czynności wykonywały się automatycznie. Przykładem może być, oznaczenie danego namespace (przykładowo default) aby automatycznie, wraz z aplikacją  uruchamiał się sidecar z envoy.
+Sam helm chart może już być aplikowany na różne sposoby wedle ustaleń projektowych. Poczynając od ręcznego deploymentu poprzez cli ‘helm’ po bardziej złożone i zautomatyzowane procesy CI/CD. Dodatkowo, można tak skonfigurować pewne polityki w Istio, aby określone czynności wykonywały się automatycznie. Przykładem może być, oznaczenie danego namespace (przykładowo default) aby automatycznie, wraz z aplikacją uruchamiał się sidecar z envoy.
 
 	kubectl label namespace default istio-injection=enabled
 
