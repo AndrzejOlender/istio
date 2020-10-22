@@ -4,4 +4,5 @@ deploy:
   tags: 
     - master
   script:
-    - diagram.py --name test_xyz samuelsantos/generate-diagrams-as-code    
+    - DIAGRAM_FILE=diagram-istio.py
+    - diagram.py --name diagrams-istio.py samuelsantos/generate-diagrams-as-code    
