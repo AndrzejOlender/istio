@@ -6,4 +6,3 @@ deploy:
   script:
     - DIAGRAM_FILE=diagram-istio.py
     - python $DIAGRAM_FILE    
-    - cp diagram-istio.png ~/test.png
