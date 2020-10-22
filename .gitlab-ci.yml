@@ -5,4 +5,4 @@ deploy:
     - master
   script:
     - DIAGRAM_FILE=diagram-istio.py
-    - diagram.py --name diagrams-istio.py samuelsantos/generate-diagrams-as-code    
+    - python diagram-istio.py    
