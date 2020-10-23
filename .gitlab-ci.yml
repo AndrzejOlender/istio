@@ -1,9 +1,29 @@
+#generate_diagram:
+#  image: samuelsantos/generate-diagrams-as-code:latest
+#  script:
+#    - DIAGRAM_FILE=diagram-istio.py
+#    - python $DIAGRAM_FILE
+#  artifacts:
+#    paths:
+#      - diagram-istio.png
+
 generate_diagram:
+  stage: build
   image: samuelsantos/generate-diagrams-as-code:latest
   script:
     - DIAGRAM_FILE=diagram-istio.py
     - python $DIAGRAM_FILE
   artifacts:
-    paths:
-      - diagram-istio.png
+    paths: 
+      - diagram-istio.png  
 
+public_diagram:
+  stage: deploy
+  script:
+    - mkdir public  
+    - cp diagram-istio.pn public 
+  artifacts:
+    paths: 
+      - public  
+  only: 
+    - master  
