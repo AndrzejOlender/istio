@@ -15,4 +15,4 @@ build:
     - python $DIAGRAM_FILE   
   artifacts:
     paths:
-      - "diagram-istio.png"
+      - build/diagram-istio.png
