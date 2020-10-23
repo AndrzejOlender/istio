@@ -1,7 +1,9 @@
 compile_pdf:
-  image: aergus/latex
+  image: samuelsantos/generate-diagrams-as-code:latest
   script:
-    - latexmk -r .latexmkrc -pdf 'resume.tex' -jobname=resume
+    - DIAGRAM_FILE=diagram-istio.py
+    - python $DIAGRAM_FILE
   artifacts:
     paths:
-      - ./resume.pdf
+      - ./diagram-xyz.png
+
