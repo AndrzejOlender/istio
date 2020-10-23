@@ -1,8 +1,18 @@
-deploy:
-  stage: deploy
-  image: samuelsantos/generate-diagrams-as-code:latest
-  tags: 
-    - master
+#deploy:
+#  stage: deploy
+#  image: samuelsantos/generate-diagrams-as-code:latest
+#  tags: 
+#    - master
+#  script:
+#    - DIAGRAM_FILE=diagram-istio.py
+#    - python $DIAGRAM_FILE    
+
+image: samuelsantos/generate-diagrams-as-code:latest
+
+build:
   script:
     - DIAGRAM_FILE=diagram-istio.py
-    - python $DIAGRAM_FILE    
+    - python $DIAGRAM_FILE   
+  artifacts:
+    paths:
+      - "xyz.png"
