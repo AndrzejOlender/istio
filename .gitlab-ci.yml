@@ -5,5 +5,5 @@ generate_diagram:
     - python $DIAGRAM_FILE
   artifacts:
     paths:
-      - ./diagram-istio.png
+      - diagram-istio.png
 
