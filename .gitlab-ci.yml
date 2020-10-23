@@ -1,18 +1,7 @@
-#deploy:
-#  stage: deploy
-#  image: samuelsantos/generate-diagrams-as-code:latest
-#  tags: 
-#    - master
-#  script:
-#    - DIAGRAM_FILE=diagram-istio.py
-#    - python $DIAGRAM_FILE    
-
-image: samuelsantos/generate-diagrams-as-code:latest
-
-build:
+compile_pdf:
+  image: aergus/latex
   script:
-    - DIAGRAM_FILE=diagram-istio.py
-    - python $DIAGRAM_FILE   
+    - latexmk -r .latexmkrc -pdf 'resume.tex' -jobname=resume
   artifacts:
     paths:
-      - ./*.png
+      - ./resume.pdf
