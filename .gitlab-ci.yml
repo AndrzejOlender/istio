@@ -21,7 +21,7 @@ public_diagram:
   stage: deploy
   script:
     - mkdir public  
-    - cp diagram-istio.pn public 
+    - cp diagram-istio.png public 
   artifacts:
     paths: 
       - public  
