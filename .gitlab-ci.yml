@@ -1,9 +1,9 @@
-compile_pdf:
+generate_diagram:
   image: samuelsantos/generate-diagrams-as-code:latest
   script:
     - DIAGRAM_FILE=diagram-istio.py
     - python $DIAGRAM_FILE
   artifacts:
     paths:
-      - ./diagram-xyz.png
+      - diagram-xyz.png
 
