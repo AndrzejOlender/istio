@@ -7,6 +7,8 @@ generate_diagram:
   artifacts:
     paths: 
       - diagram-istio.png  
+  only: 
+    - master
 
 public_diagram:
   stage: deploy
