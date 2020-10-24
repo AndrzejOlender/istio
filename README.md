@@ -2,7 +2,6 @@
 
 
 
-
 # Linux Polska - wykorzystanie Istio w klastrze K8s
 ## Makieta rozwiązania, demonstrująca, jak można wykorzystać Istio do określonych założeń projektowych
 ### Wprowadzenie 
@@ -26,7 +25,7 @@ Udostępnianie aplikacji dla użytkownika końcowego w przypadku Istio, najlepie
 Istio bowiem może pracować w dwóch trybach, restrykcyjnym oraz pobłażliwym. Jeszcze przed wersją 1.6.x, czyli stosunkowo niedawno, nie było w ogóle możliwości ruchu sieciowego wewnątrz klastra bez odpowiednich sidecar z envoy. Obecnie w nowych wersjach jest to możliwe.
 
 Poniżej przykład konfiguracji obiektów `Gateway` oraz  `VirtualService`, dzięki tym obiektom udostępniłem testową aplikację „Product Page“ na świat pod adres url [https://istio.olender.io/productpage](https://istio.olender.io/productpage).
-	
+```yaml	
 	apiVersion: networking.istio.io/v1alpha3
 	kind: Gateway
 	metadata:
@@ -77,7 +76,7 @@ Poniżej przykład konfiguracji obiektów `Gateway` oraz  `VirtualService`, dzi�
 	        host: productpage
 	        port:
 	          number: 9080
-
+```
 ### 2. Zautomatyzowana konfiguracja dostępu sieciowego wraz z procesem wdrażania aplikacji
 Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dobrze jest opracować odpowiednie polityki wraz z obiektami Istio. Od wersji 1.6.x Istio, nie ma dedykowanego helm charta do jego instalacji. Istio instaluje/modyfikuje się za pomocą cli `istioctl`. To przy okazji tworzy nam odpowiednie obiekty wewnątrz klastra K8s. Obecnie najlepsze rozwiązanie na instalację aplikacji w k8s jest jednak Helm. Jest on obecnie niejako standardem w świecie kubernetesa. W chartach prócz standardowej polityki instalacji aplikacji, mogą być zawarte odniesienia do obiektów Istio. Tym sposobem definiujemy odpowiednie polityki, w tym sieciowe, w obiektach Istio. Poniżej przykład helm charta template wraz z politykami sieciowymi dla Istio `DestinationRule`.
 
