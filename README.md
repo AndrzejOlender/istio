@@ -1,7 +1,6 @@
 
 
 
-
 # Linux Polska - wykorzystanie Istio w klastrze K8s
 ## Makieta rozwiązania, demonstrująca, jak można wykorzystać Istio do określonych założeń projektowych
 ### Wprowadzenie 
@@ -26,57 +25,57 @@ Istio bowiem może pracować w dwóch trybach, restrykcyjnym oraz pobłażliwym.
 
 Poniżej przykład konfiguracji obiektów `Gateway` oraz  `VirtualService`, dzięki tym obiektom udostępniłem testową aplikację „Product Page“ na świat pod adres url [https://istio.olender.io/productpage](https://istio.olender.io/productpage).
 ```yaml	
-	apiVersion: networking.istio.io/v1alpha3
-	kind: Gateway
-	metadata:
-	  name: bookinfo-gateway
-	spec:
-	  selector:
-	    istio: ingressgateway # use istio default controller
-	  servers:
-	  - port:
-	      number: 80
-	      name: http
-	      protocol: HTTP
-	    hosts:
-	    - "istio.olender.io"
-	  - port:
-	      name: https
-	      number: 443
-	      protocol: HTTPS
-	    hosts:
-	      - 'istio.olender.io'
-	    tls:
-	      credentialName: istio.olender.io # this should match with Certificate secretName
-	      mode: SIMPLE
-	---
-	apiVersion: networking.istio.io/v1alpha3
-	kind: VirtualService
-	metadata:
-	  name: bookinfo
-	spec:
-	  hosts:
-	  - "istio.olender.io"
-	  gateways:
-	  - bookinfo-gateway
-	  http:
-	  - match:
-	    - uri:
-	        exact: /productpage
-	    - uri:
-	        prefix: /static
-	    - uri:
-	        exact: /login
-	    - uri:
-	        exact: /logout
-	    - uri:
-	        prefix: /api/v1/products
-	    route:
-	    - destination:
-	        host: productpage
-	        port:
-	          number: 9080
-```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+    name: bookinfo-gateway
+spec:
+    selector:
+    istio: ingressgateway # use istio default controller
+    servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+    hosts:
+    - "istio.olender.io"
+    - port:
+        name: https
+        number: 443
+        protocol: HTTPS
+    hosts:
+        - 'istio.olender.io'
+    tls:
+        credentialName: istio.olender.io # this should match with Certificate secretName
+        mode: SIMPLE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+    name: bookinfo
+spec:
+    hosts:
+    - "istio.olender.io"
+    gateways:
+    - bookinfo-gateway
+    http:
+    - match:
+    - uri:
+        exact: /productpage
+    - uri:
+        prefix: /static
+    - uri:
+        exact: /login
+    - uri:
+        exact: /logout
+    - uri:
+        prefix: /api/v1/products
+    route:
+    - destination:
+        host: productpage
+        port:
+            number: 9080
+```
 ### 2. Zautomatyzowana konfiguracja dostępu sieciowego wraz z procesem wdrażania aplikacji
 Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dobrze jest opracować odpowiednie polityki wraz z obiektami Istio. Od wersji 1.6.x Istio, nie ma dedykowanego helm charta do jego instalacji. Istio instaluje/modyfikuje się za pomocą cli `istioctl`. To przy okazji tworzy nam odpowiednie obiekty wewnątrz klastra K8s. Obecnie najlepsze rozwiązanie na instalację aplikacji w k8s jest jednak Helm. Jest on obecnie niejako standardem w świecie kubernetesa. W chartach prócz standardowej polityki instalacji aplikacji, mogą być zawarte odniesienia do obiektów Istio. Tym sposobem definiujemy odpowiednie polityki, w tym sieciowe, w obiektach Istio. Poniżej przykład helm charta template wraz z politykami sieciowymi dla Istio `DestinationRule`.
 ```yaml
