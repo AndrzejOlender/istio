@@ -1,4 +1,5 @@
 
+
 # Linux Polska - wykorzystanie Istio w klastrze K8s
 ## Makieta rozwiązania, demonstrująca, jak można wykorzystać Istio do określonych założeń projektowych
 ### Wprowadzenie 
@@ -22,57 +23,57 @@ Udostępnianie aplikacji dla użytkownika końcowego w przypadku Istio, najlepie
 Istio bowiem może pracować w dwóch trybach, restrykcyjnym oraz pobłażliwym. Jeszcze przed wersją 1.6.x, czyli stosunkowo niedawno, nie było w ogóle możliwości ruchu sieciowego wewnątrz klastra bez odpowiednich sidecar z envoy. Obecnie w nowych wersjach jest to możliwe.
 
 Poniżej przykład konfiguracji obiektów `Gateway` oraz  `VirtualService`, dzięki tym obiektom udostępniłem testową aplikację „Product Page“ na świat pod adres url [https://istio.olender.io/productpage](https://istio.olender.io/productpage).
-```yaml
+```yaml	
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-	name: bookinfo-gateway
+    name: bookinfo-gateway
 spec:
-	selector:
-	istio: ingressgateway # use istio default controller
-	servers:
-	- port:
-		number: 80
-		name: http
-		protocol: HTTP
-	hosts:
-	- "istio.olender.io"
-	- port:
-		name: https
-		number: 443
-		protocol: HTTPS
-	hosts:
-		- 'istio.olender.io'
-	tls:
-		credentialName: istio.olender.io # this should match with Certificate secretName
-		mode: SIMPLE
+    selector:
+    istio: ingressgateway # use istio default controller
+    servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+    hosts:
+    - "istio.olender.io"
+    - port:
+        name: https
+        number: 443
+        protocol: HTTPS
+    hosts:
+        - 'istio.olender.io'
+    tls:
+        credentialName: istio.olender.io # this should match with Certificate secretName
+        mode: SIMPLE
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-	name: bookinfo
+    name: bookinfo
 spec:
-	hosts:
-	- "istio.olender.io"
-	gateways:
-	- bookinfo-gateway
-	http:
-	- match:
-	- uri:
-		exact: /productpage
-	- uri:
-		prefix: /static
-	- uri:
-		exact: /login
-	- uri:
-		exact: /logout
-	- uri:
-		prefix: /api/v1/products
-	route:
-	- destination:
-		host: productpage
-		port:
-			number: 9080
+    hosts:
+    - "istio.olender.io"
+    gateways:
+    - bookinfo-gateway
+    http:
+    - match:
+    - uri:
+        exact: /productpage
+    - uri:
+        prefix: /static
+    - uri:
+        exact: /login
+    - uri:
+        exact: /logout
+    - uri:
+        prefix: /api/v1/products
+    route:
+    - destination:
+        host: productpage
+        port:
+            number: 9080
 ```
 ### 2. Zautomatyzowana konfiguracja dostępu sieciowego wraz z procesem wdrażania aplikacji
 Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dobrze jest opracować odpowiednie polityki wraz z obiektami Istio. Od wersji 1.6.x Istio, nie ma dedykowanego helm charta do jego instalacji. Istio instaluje/modyfikuje się za pomocą cli `istioctl`. To przy okazji tworzy nam odpowiednie obiekty wewnątrz klastra K8s. Obecnie najlepsze rozwiązanie na instalację aplikacji w k8s jest jednak Helm. Jest on obecnie niejako standardem w świecie kubernetesa. W chartach prócz standardowej polityki instalacji aplikacji, mogą być zawarte odniesienia do obiektów Istio. Tym sposobem definiujemy odpowiednie polityki, w tym sieciowe, w obiektach Istio. Poniżej przykład helm charta template wraz z politykami sieciowymi dla Istio `DestinationRule`.
@@ -80,18 +81,18 @@ Aby zautomatyzować proces wdrażania aplikacji, wraz z dostępem sieciowym, dob
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-	name: "{{ template "bookinfo.fullname" . }}"
+    name: "{{ template "bookinfo.fullname" . }}"
 spec:
-	host: {{ .Values.vercelDomain  }}
-	trafficPolicy:
-	loadBalancer:
-		simple: ROUND_ROBIN
-	portLevelSettings:
-	- port:
-		number: 443
-		tls:
-		mode: SIMPLE
-		host: {{ .Values.ingress.hosts }}
+    host: {{ .Values.vercelDomain  }}
+    trafficPolicy:
+    loadBalancer:
+        simple: ROUND_ROBIN
+    portLevelSettings:
+    - port:
+        number: 443
+        tls:
+        mode: SIMPLE
+        host: {{ .Values.ingress.hosts }}
 ```
 Sam helm chart może już być aplikowany na różne sposoby wedle ustaleń projektowych. Poczynając od ręcznego deploymentu poprzez cli ‘helm’ po bardziej złożone i zautomatyzowane procesy CI/CD. Dodatkowo, można tak skonfigurować pewne polityki w Istio, aby określone czynności wykonywały się automatycznie. Przykładem może być, oznaczenie danego namespace (przykładowo default) aby automatycznie, wraz z aplikacją uruchamiał się sidecar z envoy.
 
@@ -103,54 +104,54 @@ Sam helm chart może już być aplikowany na różne sposoby wedle ustaleń proj
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-	name: external-svc-mongocluster
+    name: external-svc-mongocluster
 spec:
-	hosts:
-	- mymongodb.somedomain # not used
-	addresses:
-	- 88.88.88.88 # VIP
-	ports:
-	- number: 27018
-	name: mongodb
-	protocol: MONGO
-	location: MESH_INTERNAL
-	resolution: STATIC
-	endpoints:
-	- address: 2.2.2.2
-	- address: 3.3.3.3
+    hosts:
+    - mymongodb.somedomain # not used
+    addresses:
+    - 88.88.88.88 # VIP
+    ports:
+    - number: 27018
+    name: mongodb
+    protocol: MONGO
+    location: MESH_INTERNAL
+    resolution: STATIC
+    endpoints:
+    - address: 2.2.2.2
+    - address: 3.3.3.3
 ```
 oraz dodatkowo możemy zdefiniować powiązaną regułę `DestinationRule`. Służy ona do inicjacji połączenia mTLS z instancjami bazy danych.
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-	name: mtls-mongocluster
+    name: mtls-mongocluster
 spec:
-	host: mymongodb.somedomain
-	trafficPolicy:
-	tls:
-		mode: MUTUAL
-		clientCertificate: /etc/certs/myclientcert.pem
-		privateKey: /etc/certs/client_private_key.pem
-		caCertificates: /etc/certs/rootcacerts.pem
+    host: mymongodb.somedomain
+    trafficPolicy:
+    tls:
+        mode: MUTUAL
+        clientCertificate: /etc/certs/myclientcert.pem
+        privateKey: /etc/certs/client_private_key.pem
+        caCertificates: /etc/certs/rootcacerts.pem
 ```
 Analogicznie, możemy również skonfigurować obiekt `ServiceEntry` dla zewnętrznej usługi, która jest dostępna pod określonym socketem. Poniżej przykład obiektu.
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-	name: unix-domain-socket-example
+    name: unix-domain-socket-example
 spec:
-	hosts:
-	- "example.unix.local"
-	location: MESH_EXTERNAL
-	ports:
-	- number: 80
-	name: http
-	protocol: HTTP
-	resolution: STATIC
-	endpoints:
-	- address: unix:///var/run/example/socket
+    hosts:
+    - "example.unix.local"
+    location: MESH_EXTERNAL
+    ports:
+    - number: 80
+    name: http
+    protocol: HTTP
+    resolution: STATIC
+    endpoints:
+    - address: unix:///var/run/example/socket
 ```
 
 ### Diagram prezentujący rozwiązanie
