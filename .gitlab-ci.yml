@@ -10,13 +10,3 @@ generate_diagram:
   only: 
     - master
 
-public_diagram:
-  stage: deploy
-  script:
-    - mkdir public  
-    - cp diagram-istio.png public 
-  artifacts:
-    paths: 
-      - public  
-  only: 
-    - master  
