@@ -1,3 +1,4 @@
+[![Diagram.py to PNG](https://github.com/AndrzejOlender/istio/actions/workflows/main.yml/badge.svg)](https://github.com/AndrzejOlender/istio/actions/workflows/main.yml)
 
 # Linux Polska - wykorzystanie Istio w klastrze K8s
 ## Makieta rozwiązania, demonstrująca, jak można wykorzystać Istio do określonych założeń projektowych
